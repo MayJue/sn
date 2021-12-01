@@ -22,13 +22,15 @@ class SocialNetwork{
     SocialNetwork();
     void build( int n );
     void print_graph();
-    void add_edge( int a, int b );
+    void add_edge( int a, int b, float w );
     void remove_edge( int a, int b );
     bool is_in( stack<int> a, int b);
     bool DFS( int a, int b, stack<int> DFS_connected, stack<int> checked );
     bool BFS( int a, int b );
     vector<int> get_friends( int a );
     vector<int> get_friends_of_friends( int a );
+    void dijkstra_initialize(int s);
+    void dijkstra(int s);
 
   // Here you will initialize any attributes you need for your class.
   private:
@@ -52,7 +54,7 @@ void SocialNetwork::build( int n ){
       graph.push_back(row);
     }
     cout << "Create adjacency matrix "<< endl;
-    print_graph();
+
 
 
 }
@@ -66,12 +68,12 @@ void SocialNetwork::print_graph(){
   cout << " "<< endl;
 }
 // Method to add an edge between nodes.
-void SocialNetwork::add_edge( int a, int b ){
-  graph[a][b] = 1;
-  graph[b][a] = 1;
+void SocialNetwork::add_edge( int a, int b, float w){
+  graph[a][b] = w;
+  graph[b][a] = w;
 
   std::cout << "Add edge between node "<< a << " and " << b << '\n';
-  print_graph();
+
 }
 
 // Method to remove an edge between nodes.
@@ -80,7 +82,7 @@ void SocialNetwork::remove_edge( int a, int b ){
   graph[b][a] = 0;
 
   std::cout << "Remove edge between node "<< a << " and " << b << '\n';
-  print_graph();
+
 }
 bool SocialNetwork::is_in(stack<int> a, int b){
   stack<int> temp = a;
@@ -95,7 +97,7 @@ bool SocialNetwork::is_in(stack<int> a, int b){
 // Method to perform DFS to see if b can be reached from a.
 bool SocialNetwork::DFS( int a = 0, int b = 0, stack<int> DFS_connected ={}, stack<int> checked = {} ){
   for (int i = 0; i< graph.size(); i++){
-    if (graph[a][i] == 1){
+    if (graph[a][i] >= 1){
       if (i == b){
         return true;
       }
@@ -121,7 +123,7 @@ bool SocialNetwork::BFS( int a, int b ){
   stack<int> checked;
   queue<int> BFS_connected;
   for (int i = 0; i< graph.size();i++){
-    if (graph[a][i] == 1){
+    if (graph[a][i] >= 1){
       if (i == b){
         return true;
       }
@@ -134,7 +136,7 @@ bool SocialNetwork::BFS( int a, int b ){
         int temp = BFS_connected.front();
         BFS_connected.pop();
         for (int i = 0; i< graph.size();i++){
-          if (graph[temp][i] == 1){
+          if (graph[temp][i] >= 1){
             if (i == b){
               return true;
             }
@@ -155,7 +157,7 @@ vector<int> SocialNetwork::get_friends( int a ){
   vector<int> friends;
 
   for (int i=0; i< graph.size(); i++){
-    if (graph[a][i] == 1){
+    if (graph[a][i] >= 1){
       friends.push_back(i);
     }
   }
@@ -168,7 +170,7 @@ vector<int> SocialNetwork::get_friends_of_friends( int a ){
   stack<int> checked;
   checked.push(a);
   for (int i = 0; i< graph.size();i++){
-    if (graph[a][i] == 1){
+    if (graph[a][i] >= 1){
       checked.push(i);
       for (int j = 0; j< graph.size(); j++){
         if (graph[i][j] == 1 && is_in(checked, j) == false){
@@ -181,17 +183,77 @@ vector<int> SocialNetwork::get_friends_of_friends( int a ){
 
 return friends_of_friends;
 }
+void SocialNetwork::dijkstra_initialize( int s ){
+  vector<int> d;  //distance
+  vector<int> p;  //penultimate vertex
+  int infinit = 9999;
+  for (int i = 0; i< graph.size();i++){
+    d[i] = 9999;
+    p[i] = -1;
+  }
+  d[s]= 0;
 
+}
+void SocialNetwork::dijkstra( int s){
+  vector<int> d;  //distance
+  vector<int> p;  //penultimate vertex
+  vector<int> temp_p;
+  int infinit = 9999;
+  for (int i = 0; i< graph.size();i++){
+    d[i] = 9999;
+    p[i] = -1;
+  }
+  d[s]= 0;
+  p[s] = s;
+  temp_p.push_back(s);
+
+
+  int mindis = 9999;
+  int minnode = 0;
+  int currnode = s;
+  for (int i = 0; i< temp_p.size();i++){
+    for (int j = 0; j< graph.size();j++){
+      if (graph[temp_p[i]][j] > 0 && graph[temp_p[i]][j] < mindis && d[j] != 9999){
+        mindis = graph[temp_p[i]][j];
+        minnode = j;
+      }
+      if (graph[temp_p[i]][j] > 0 && graph[temp_p[i]][j] + d[temp_p[i]] < d[j]){
+        d[j] = graph[temp_p[i]][j];
+        p[j] = temp_p[i];
+      }
+    }
+
+
+    temp_p.push_back(minnode);
+  }
+
+
+
+  // for (int i = 0; i< graph.size();i++){
+  //   int mindis = 9999;
+  //   int node = 0;
+  //   for(int j = 0; j< graph.size();i++){
+  //     if(graph[i][j] < mindis){
+  //       mindis = graph[i][j];
+  //       node = j;
+  //     }
+  //   }
+  //
+  // }
+}
 // Main function can be used for testing purposes.
 int main(){
   SocialNetwork sn;
   sn.build(5);
-  sn.add_edge(1,2);
-  sn.add_edge(0,2);
-  sn.add_edge(0,3);
-  sn.add_edge(4,3);
-  sn.add_edge(1,3);
+  sn.add_edge(1,2, 1.0f);
+  sn.add_edge(0,2, 2.0f);
+  sn.add_edge(0,3, 2.0f);
+  sn.add_edge(4,3, 4.0f);
+  sn.add_edge(1,3, 5.0f);
+  sn.add_edge(2,3, 5.0f);
+  sn.add_edge(0,4, 3.0f);
   sn.remove_edge(1,3);
+  sn.print_graph();
 
   std::cout << " " << '\n';
   bool dfs_connected = sn.DFS(1, 3);
@@ -214,6 +276,6 @@ int main(){
   for (int i = 0; i < friends_of_friends.size(); i++){
     cout << friends_of_friends[i]<< " ";
   }
-
+  sn.dijkstra(0);
   return 0;
 }
