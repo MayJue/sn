@@ -31,6 +31,7 @@ class SocialNetwork{
     vector<int> get_friends_of_friends( int a );
     void dijkstra_initialize(int s);
     void dijkstra(int s);
+    void prim(int s);
 
   // Here you will initialize any attributes you need for your class.
   private:
@@ -212,18 +213,14 @@ void SocialNetwork::dijkstra( int s){
   p[s] = s;
   visited[s] = 1;
   parent.push_back(s);
-
-
-
   int minnode = 0;
   int currnode = s;
   for (int i = 0; i< parent.size();i++){
-    std::cout << "temp size "<< parent.size() << i<<"parent: "<<  parent[i] << '\n';
     int mindis = 9999;
     for (int j = 0; j< graph.size();j++){
       if ( graph[parent[i]][j]+ d[parent[i]] < d[j] && visited[j] == -1 && graph[parent[i]][j]+ d[parent[i]] < tempd[j]){
-        if (graph[parent[i]][j] < mindis){
-          mindis = graph[parent[i]][j];
+        if (graph[parent[i]][j] + d[parent[i]] < mindis){
+          mindis = graph[parent[i]][j]+ d[parent[i]];
           minnode = j;
           visited[j] = 1;
         }
@@ -231,10 +228,14 @@ void SocialNetwork::dijkstra( int s){
         tempd[j] = graph[parent[i]][j] + d[parent[i]];
         tempp[j] = parent[i];
       }
+      else if(graph[parent[i]][j]+ d[parent[i]] > d[j] && d[j] < mindis && visited[j] == -1){
+        mindis = graph[parent[i]][j]+ d[parent[i]];
+        minnode = j;
+        visited[j] = 1;
+      }
     }
     // std::cout << "graph "<< graph[parent[i]][minnode] << " parent "<<d[parent[i]]<<" min  "<<  d[minnode]<< " min "<< minnode<< '\n';
     if (graph[parent[i]][minnode] + d[parent[i]] <= d[minnode]){
-      std::cout << "herere " << '\n';
       d[minnode] = graph[parent[i]][minnode] + d[parent[i]] ;
       p[minnode] = parent[i];
       visited[minnode] = 1;
@@ -242,14 +243,7 @@ void SocialNetwork::dijkstra( int s){
       tempd[minnode] = 9999;
       tempp[minnode] = -1;
     }
-
     else if (i+1 <= parent.size() && parent.size()!= d.size()){
-      std::cout << "OOO";
-      for (int i = 0; i< d.size();i++){
-        std::cout << " t  d:"<< tempd[i] ;
-        std::cout << " t  p:"<< tempp[i] ;
-      }
-      std::cout << " " << '\n';
       int mindis = 9999;
       int minnode = 0;
       for (int j = 0; j< tempd.size();j++){
@@ -266,27 +260,98 @@ void SocialNetwork::dijkstra( int s){
       tempd[minnode] = 9999;
       tempp[minnode] = -1;
     }
+  }
+  std::cout << "Dijkstra" << '\n';
+  for (int i = 0; i< d.size();i++){
+    std::cout << " d:"<< d[i] ;
+    std::cout << " p:"<< p[i] ;
+  }
+  std::cout << " " << '\n';
 
+  std::cout << "From "<< s<< " to:" <<"   |   distance: | Parent" << '\n';
+  for(int i = 0; i< parent.size();i++){
+    std::cout << parent[i]<< "            |   "<< d[parent[i]]<<  "         | "<< p[parent[i]] << '\n';
+  }
+}
+
+  void SocialNetwork::prim( int s){
+    vector<int> d;  //distance
+    vector<int> p;  //penultimate vertex
+    vector<int> visited;
+    vector<int> parent;
+    vector<int> tempd;
+    vector<int> tempp;
+    for(int i = 0; i< graph.size();i++){
+      d.push_back(9999);
+      p.push_back(-1);
+      visited.push_back(-1);
+      tempd.push_back(9999);
+      tempp.push_back(-1);
+    }
+    d[s]= 0;
+    p[s] = s;
+    visited[s] = 1;
+    parent.push_back(s);
+    int minnode = 0;
+    int currnode = s;
+    for (int i = 0; i< parent.size();i++){
+      int mindis = 9999;
+      for (int j = 0; j< graph.size();j++){
+        if ( graph[parent[i]][j] < d[j] && visited[j] == -1 && graph[parent[i]][j] < tempd[j]){
+          if (graph[parent[i]][j]  < mindis){
+            mindis = graph[parent[i]][j];
+            minnode = j;
+            visited[j] = 1;
+          }
+          if(graph[parent[i]][j]< tempd[j])
+          tempd[j] = graph[parent[i]][j];
+          tempp[j] = parent[i];
+        }
+        else if(graph[parent[i]][j]> d[j] && d[j] < mindis && visited[j] == -1){
+          mindis = graph[parent[i]][j];
+          minnode = j;
+          visited[j] = 1;
+        }
+      }
+      // std::cout << "graph "<< graph[parent[i]][minnode] << " parent "<<d[parent[i]]<<" min  "<<  d[minnode]<< " min "<< minnode<< '\n';
+      if (graph[parent[i]][minnode] <= d[minnode]){
+        d[minnode] = graph[parent[i]][minnode] ;
+        p[minnode] = parent[i];
+        visited[minnode] = 1;
+        parent.push_back(minnode);
+        tempd[minnode] = 9999;
+        tempp[minnode] = -1;
+      }
+      else if (i+1 <= parent.size() && parent.size()!= d.size()){
+        int mindis = 9999;
+        int minnode = 0;
+        for (int j = 0; j< tempd.size();j++){
+
+          if (tempd[j] < mindis){
+            mindis = tempd[j];
+            minnode = j;
+          }
+        }
+        d[minnode] = mindis;
+        p[minnode] = tempp[minnode];
+        visited[minnode] = 1;
+        parent.push_back(minnode);
+        tempd[minnode] = 9999;
+        tempp[minnode] = -1;
+      }
+
+    }
+    std::cout << "Prim" << '\n';
     for (int i = 0; i< d.size();i++){
       std::cout << " d:"<< d[i] ;
       std::cout << " p:"<< p[i] ;
     }
     std::cout << " " << '\n';
-  }
 
-
-
-  // for (int i = 0; i< graph.size();i++){
-  //   int mindis = 9999;
-  //   int node = 0;
-  //   for(int j = 0; j< graph.size();i++){
-  //     if(graph[i][j] < mindis){
-  //       mindis = graph[i][j];
-  //       node = j;
-  //     }
-  //   }
-  //
-  // }
+    std::cout << "Vertex " <<"   |   distance: | Parent" << '\n';
+    for(int i = 0; i< parent.size();i++){
+      std::cout << parent[i]<< "         |   "<< d[parent[i]]<<  "         | "<< p[parent[i]] << '\n';
+    }
 }
 // Main function can be used for testing purposes.
 int main(){
@@ -323,6 +388,7 @@ int main(){
   for (int i = 0; i < friends_of_friends.size(); i++){
     cout << friends_of_friends[i]<< " ";
   }
-  sn.dijkstra(0);
+  sn.dijkstra(1);
+  sn.prim(1);
   return 0;
 }
