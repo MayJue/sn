@@ -48,7 +48,7 @@ SocialNetwork::SocialNetwork(){
 void SocialNetwork::build( int n ){
     vector<int> row;
     for (int i = 0; i < n; i++){
-      row.push_back(0);
+      row.push_back(9999);
     }
     for (int i = 0; i < n; i++){
       graph.push_back(row);
@@ -61,7 +61,7 @@ void SocialNetwork::build( int n ){
 void SocialNetwork::print_graph(){
   for (int i = 0; i < graph.size(); i++){
     for (int j = 0; j < graph.size(); j++){
-      cout << graph[i][j];
+      cout << graph[i][j]<< ", ";
     }
     cout << " "<< endl;
   }
@@ -78,8 +78,8 @@ void SocialNetwork::add_edge( int a, int b, float w){
 
 // Method to remove an edge between nodes.
 void SocialNetwork::remove_edge( int a, int b ){
-  graph[a][b] = 0;
-  graph[b][a] = 0;
+  graph[a][b] = 9999;
+  graph[b][a] = 9999;
 
   std::cout << "Remove edge between node "<< a << " and " << b << '\n';
 
@@ -197,34 +197,81 @@ void SocialNetwork::dijkstra_initialize( int s ){
 void SocialNetwork::dijkstra( int s){
   vector<int> d;  //distance
   vector<int> p;  //penultimate vertex
-  vector<int> temp_p;
-  int infinit = 9999;
-  for (int i = 0; i< graph.size();i++){
-    d[i] = 9999;
-    p[i] = -1;
+  vector<int> visited;
+  vector<int> parent;
+  vector<int> tempd;
+  vector<int> tempp;
+  for(int i = 0; i< graph.size();i++){
+    d.push_back(9999);
+    p.push_back(-1);
+    visited.push_back(-1);
+    tempd.push_back(9999);
+    tempp.push_back(-1);
   }
   d[s]= 0;
   p[s] = s;
-  temp_p.push_back(s);
+  visited[s] = 1;
+  parent.push_back(s);
 
 
-  int mindis = 9999;
+
   int minnode = 0;
   int currnode = s;
-  for (int i = 0; i< temp_p.size();i++){
+  for (int i = 0; i< parent.size();i++){
+    std::cout << "temp size "<< parent.size() << i<<"parent: "<<  parent[i] << '\n';
+    int mindis = 9999;
     for (int j = 0; j< graph.size();j++){
-      if (graph[temp_p[i]][j] > 0 && graph[temp_p[i]][j] < mindis && d[j] != 9999){
-        mindis = graph[temp_p[i]][j];
-        minnode = j;
-      }
-      if (graph[temp_p[i]][j] > 0 && graph[temp_p[i]][j] + d[temp_p[i]] < d[j]){
-        d[j] = graph[temp_p[i]][j];
-        p[j] = temp_p[i];
+      if ( graph[parent[i]][j]+ d[parent[i]] < d[j] && visited[j] == -1 && graph[parent[i]][j]+ d[parent[i]] < tempd[j]){
+        if (graph[parent[i]][j] < mindis){
+          mindis = graph[parent[i]][j];
+          minnode = j;
+          visited[j] = 1;
+        }
+        if(graph[parent[i]][j]+ d[parent[i]] < tempd[j])
+        tempd[j] = graph[parent[i]][j] + d[parent[i]];
+        tempp[j] = parent[i];
       }
     }
+    // std::cout << "graph "<< graph[parent[i]][minnode] << " parent "<<d[parent[i]]<<" min  "<<  d[minnode]<< " min "<< minnode<< '\n';
+    if (graph[parent[i]][minnode] + d[parent[i]] <= d[minnode]){
+      std::cout << "herere " << '\n';
+      d[minnode] = graph[parent[i]][minnode] + d[parent[i]] ;
+      p[minnode] = parent[i];
+      visited[minnode] = 1;
+      parent.push_back(minnode);
+      tempd[minnode] = 9999;
+      tempp[minnode] = -1;
+    }
 
+    else if (i+1 <= parent.size() && parent.size()!= d.size()){
+      std::cout << "OOO";
+      for (int i = 0; i< d.size();i++){
+        std::cout << " t  d:"<< tempd[i] ;
+        std::cout << " t  p:"<< tempp[i] ;
+      }
+      std::cout << " " << '\n';
+      int mindis = 9999;
+      int minnode = 0;
+      for (int j = 0; j< tempd.size();j++){
 
-    temp_p.push_back(minnode);
+        if (tempd[j] < mindis){
+          mindis = tempd[j];
+          minnode = j;
+        }
+      }
+      d[minnode] = mindis;
+      p[minnode] = tempp[minnode];
+      visited[minnode] = 1;
+      parent.push_back(minnode);
+      tempd[minnode] = 9999;
+      tempp[minnode] = -1;
+    }
+
+    for (int i = 0; i< d.size();i++){
+      std::cout << " d:"<< d[i] ;
+      std::cout << " p:"<< p[i] ;
+    }
+    std::cout << " " << '\n';
   }
 
 
